@@ -161,5 +161,4 @@ cython_debug/
 
 config.dev.json
 Docker_Run_Command.md
-fx_admin_user_CODE.txt
-PHPSESSID.txt
+.DS_Store
