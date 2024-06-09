@@ -1,0 +1,11 @@
+{
+    "app": {
+        "name": "BookieBot_Server"
+        },
+    "database": {
+        "user": "admin",
+        "host": "170.187.230.222",
+        "port": "27017",
+        "name": "Prod"
+    }
+}
