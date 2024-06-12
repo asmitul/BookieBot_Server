@@ -60,11 +60,11 @@ class TransactionCreate(BaseModel):
 class TransactionResponseModel(BaseModel):
     serialNumber: int
     account_id_High: str 
-    amount_High: float
-    rate: float
-    amount_Low: float
+    amount_High: float | int
+    rate: float | int
+    amount_Low: float | int
     account_id_Low: str
-    description: str
+    description: str | None
     create_date: datetime
     last_update_date: datetime
 
