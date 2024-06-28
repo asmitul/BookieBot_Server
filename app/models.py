@@ -10,6 +10,7 @@ class AccountCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=100, description="Account holder's name")
     currency: str = Field(..., description="The currency code for the account, e.g., USD, EUR")
     balance: float
+    type: int # check app/account_type.png
     create_date: datetime = Field(default_factory=datetime.utcnow, description="The date the account was created")
     last_update_date: datetime = Field(default_factory=datetime.utcnow, description="The date the account was last updated")
 
@@ -18,6 +19,7 @@ class AccountResponseModel(BaseModel):
     name: str
     currency: str
     balance: float
+    type: int
     create_date: datetime
     last_update_date: datetime
 
