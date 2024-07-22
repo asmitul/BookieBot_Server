@@ -1,9 +1,12 @@
-from fastapi import APIRouter, FastAPI, Depends, HTTPException, status
+from datetime import datetime, timedelta
+from fastapi import APIRouter, FastAPI, Depends, HTTPException, Path, Query, status
+from pydantic import BaseModel
 
 from .models import AccountCreate, AccountResponseModel, GetAccountsResponseModel, ResponseModel, TransactionCreate, TransactionResponseModel, TransactionsResponseModel
 from .database import mongodb
 from .auth import get_api_key
 from bson import ObjectId
+import requests
 
 app = FastAPI()
 router = APIRouter(prefix="/v1")
@@ -131,5 +134,96 @@ async def delete_transaction(serial_number: int):
         return ResponseModel(success=True, message="Transaction deleted")
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+    
+
+class ComparisonFundReturnsRequest(BaseModel):
+    calismatipi: str = "1"
+    fontip: str = "YAT"
+    sfontur: str = ""
+    kurucukod: str = ""
+    fongrup: str = ""
+    bastarih: str
+    bittarih: str
+    fonturkod: str = ""
+    fonunvantip: str = ""
+    strperiod: str = "1,1,1,1,1,1,1"
+    islemdurum: str = "1"
+
+@router.get("/tefas/BindComparisonFundReturns", tags=["Tefas"])
+async def bind_comparison_fund_returns(
+    bastarih: str = Query(None, description="Start date in format DD.MM.YYYY"),
+    bittarih: str = Query(None, description="End date in format DD.MM.YYYY")
+):
+    # Default dates: past month
+    if not bastarih:
+        bastarih = (datetime.now() - timedelta(days=30)).strftime('%d.%m.%Y')
+    if not bittarih:
+        bittarih = datetime.now().strftime('%d.%m.%Y')
+        
+    payload = ComparisonFundReturnsRequest(
+        bastarih=bastarih,
+        bittarih=bittarih
+    )
+
+    url = 'https://www.tefas.gov.tr/api/DB/BindComparisonFundReturns'
+
+    try:
+        response = requests.post(url, data=payload.dict())
+        response.raise_for_status()
+        data = response.json()
+        return data
+    except requests.exceptions.HTTPError as http_err:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"HTTP error occurred: {http_err}")
+    except requests.exceptions.ConnectionError as conn_err:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Connection error occurred: {conn_err}")
+    except requests.exceptions.Timeout as timeout_err:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Timeout error occurred: {timeout_err}")
+    except requests.exceptions.RequestException as req_err:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An error occurred: {req_err}")
+
+class BindHistoryInfo(BaseModel):
+    fontip: str = "YAT"
+    sfontur: str = ""
+    fonkod: str
+    fongrup: str = ""
+    bastarih: str
+    bittarih: str
+    fonturkod: str = ""
+    fonunvantip: str = ""
+
+@router.get("/tefas/BindHistoryInfo/{fonkod}", tags=["Tefas"])
+async def bind_history_info(
+    fonkod: str = Path(..., description="Fund code"),
+    bastarih: str = Query(None, description="Start date in format DD.MM.YYYY"),
+    bittarih: str = Query(None, description="End date in format DD.MM.YYYY")
+):
+    # Default dates: past month
+    if not bastarih:
+        bastarih = (datetime.now() - timedelta(days=30)).strftime('%d.%m.%Y')
+    if not bittarih:
+        bittarih = datetime.now().strftime('%d.%m.%Y')
+        
+    payload = BindHistoryInfo(
+        fonkod=fonkod,
+        bastarih=bastarih,
+        bittarih=bittarih
+    )
+
+    url = 'https://www.tefas.gov.tr/api/DB/BindHistoryInfo'
+
+    try:
+        response = requests.post(url, data=payload.dict())
+        response.raise_for_status()
+        data = response.json()
+        return data
+    except requests.exceptions.HTTPError as http_err:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"HTTP error occurred: {http_err}")
+    except requests.exceptions.ConnectionError as conn_err:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Connection error occurred: {conn_err}")
+    except requests.exceptions.Timeout as timeout_err:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Timeout error occurred: {timeout_err}")
+    except requests.exceptions.RequestException as req_err:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An error occurred: {req_err}")
+
 
 app.include_router(router)
