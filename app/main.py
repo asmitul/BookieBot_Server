@@ -171,6 +171,18 @@ async def bind_comparison_fund_returns(
         response = requests.post(url, data=payload.dict())
         response.raise_for_status()
         data = response.json()
+
+        # 处理 GETIRIORANI 为 None 的情况，将 None 替换为一个最小的值（如负无穷）
+        for item in data['data']:
+            if item['GETIRIORANI'] is None:
+                item['GETIRIORANI'] = -1e10
+
+        # 按照 GETIRIORANI 从大到小排序
+        sorted_data = sorted(data['data'], key=lambda x: x['GETIRIORANI'], reverse=True)
+
+        # 更新原数据
+        data['data'] = sorted_data
+
         return data
     except requests.exceptions.HTTPError as http_err:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"HTTP error occurred: {http_err}")
