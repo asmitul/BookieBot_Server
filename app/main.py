@@ -238,4 +238,67 @@ async def bind_history_info(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An error occurred: {req_err}")
 
 
+@router.get("/tefas/BindComparisonFundSizes", tags=["Tefas"])
+async def bind_comparison_fund_sizes(
+    bastarih: str = Query(None, description="Start date in format DD.MM.YYYY"),
+    bittarih: str = Query(None, description="End date in format DD.MM.YYYY")
+):
+    # Default dates: past month
+    if not bastarih:
+        bastarih = (datetime.now() - timedelta(days=30)).strftime('%d.%m.%Y')
+    if not bittarih:
+        bittarih = datetime.now().strftime('%d.%m.%Y')
+        
+    payload = ComparisonFundReturnsRequest(
+        bastarih=bastarih,
+        bittarih=bittarih
+    )
+
+    url = 'https://www.tefas.gov.tr/api/DB/BindComparisonFundSizes'
+
+    try:
+        response = requests.post(url, data=payload.dict())
+        response.raise_for_status()
+        data = response.json()
+        return data
+    except requests.exceptions.HTTPError as http_err:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"HTTP error occurred: {http_err}")
+    except requests.exceptions.ConnectionError as conn_err:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Connection error occurred: {conn_err}")
+    except requests.exceptions.Timeout as timeout_err:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Timeout error occurred: {timeout_err}")
+    except requests.exceptions.RequestException as req_err:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An error occurred: {req_err}")
+
+@router.get("/tefas/BindComparisonManagementFees", tags=["Tefas"])
+async def bind_comparison_management_fees(
+):
+        
+    payload = {
+        "fontip": "YAT",
+        "sfontur": "",
+        "kurucukod": "",
+        "fongrup": "",
+        "fonturkod": "",
+        "fonunvantip": "",
+        "islemdurum": "1"
+    }
+
+    url = 'https://www.tefas.gov.tr/api/DB/BindComparisonManagementFees'
+
+    try:
+        response = requests.post(url, data=payload)
+        response.raise_for_status()
+        data = response.json()
+        return data
+    except requests.exceptions.HTTPError as http_err:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"HTTP error occurred: {http_err}")
+    except requests.exceptions.ConnectionError as conn_err:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Connection error occurred: {conn_err}")
+    except requests.exceptions.Timeout as timeout_err:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Timeout error occurred: {timeout_err}")
+    except requests.exceptions.RequestException as req_err:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An error occurred: {req_err}")
+
+
 app.include_router(router)
