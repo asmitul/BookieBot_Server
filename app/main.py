@@ -7,6 +7,9 @@ from .database import mongodb
 from .auth import get_api_key
 from bson import ObjectId
 import requests
+from collections import Counter
+import time
+import calendar
 
 app = FastAPI()
 router = APIRouter(prefix="/v1")
@@ -260,6 +263,18 @@ async def bind_comparison_fund_sizes(
         response = requests.post(url, data=payload.dict())
         response.raise_for_status()
         data = response.json()
+
+        # 处理 GETIRIORANI 为 None 的情况，将 None 替换为一个最小的值（如负无穷）
+        for item in data['data']:
+            if item['SONPORTFOYDEGERI'] is None:
+                item['SONPORTFOYDEGERI'] = -1e10
+
+        # 按照 GETIRIORANI 从大到小排序
+        sorted_data = sorted(data['data'], key=lambda x: x['SONPORTFOYDEGERI'], reverse=True)
+
+        # 更新原数据
+        data['data'] = sorted_data
+
         return data
     except requests.exceptions.HTTPError as http_err:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"HTTP error occurred: {http_err}")
@@ -300,5 +315,268 @@ async def bind_comparison_management_fees(
     except requests.exceptions.RequestException as req_err:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An error occurred: {req_err}")
 
+
+@router.get("/tefas/ParaGirisi", tags=["Tefas"])
+async def bind_comparison_fund_sizes(
+    bastarih: str = Query(None, description="Start date in format DD.MM.YYYY"),
+    bittarih: str = Query(None, description="End date in format DD.MM.YYYY")
+):
+    # Default dates: past month
+    if not bastarih:
+        bastarih = (datetime.now() - timedelta(days=30)).strftime('%d.%m.%Y')
+    if not bittarih:
+        bittarih = datetime.now().strftime('%d.%m.%Y')
+        
+    payload = ComparisonFundReturnsRequest(
+        bastarih=bastarih,
+        bittarih=bittarih
+    )
+
+    url = 'https://www.tefas.gov.tr/api/DB/BindComparisonFundSizes'
+
+    try:
+        response = requests.post(url, data=payload.dict())
+        response.raise_for_status()
+        data = response.json()
+
+        # 计算并添加新字段
+        total_delta = 0
+        for item in data['data']:
+            item['PORTFOYDEGERIDELTA'] = round(item['SONPORTFOYDEGERI'] - item['ILKPORTFOYDEGERI'],2)
+            total_delta += item['PORTFOYDEGERIDELTA']
+
+        # 将总和添加到原始数据中
+        data['TOTALPORTFOYDEGERIDELTA'] = round(total_delta,2)
+
+        # 处理 GETIRIORANI 为 None 的情况，将 None 替换为一个最小的值（如负无穷）
+        for item in data['data']:
+            if item['PORTFOYDEGERIDELTA'] is None:
+                item['PORTFOYDEGERIDELTA'] = -1e10
+
+        # 按照 GETIRIORANI 从大到小排序
+        sorted_data = sorted(data['data'], key=lambda x: x['PORTFOYDEGERIDELTA'], reverse=True)
+
+        # 更新原数据
+        data['data'] = sorted_data
+
+        # 获取前20条数据，中的data['FONTURACIKLAMA']
+        data_frist_20 = data['data'][:30]
+
+        # print(data_frist_20)
+
+        # Get all FONTURACIKLAMA values
+        fonturaciklama_list = [item['FONTURACIKLAMA'] for item in data_frist_20]
+
+        # Count the occurrences of each value
+        fonturaciklama_counts = Counter(fonturaciklama_list)
+
+        # Get the most common value
+        most_common_fonturaciklama = fonturaciklama_counts.most_common(1)[0]
+
+        print(f"En Fazla Para Girisi olan: {most_common_fonturaciklama[0]}, Count: {most_common_fonturaciklama[1]}")
+
+
+
+        return data_frist_20
+    except requests.exceptions.HTTPError as http_err:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"HTTP error occurred: {http_err}")
+    except requests.exceptions.ConnectionError as conn_err:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Connection error occurred: {conn_err}")
+    except requests.exceptions.Timeout as timeout_err:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Timeout error occurred: {timeout_err}")
+    except requests.exceptions.RequestException as req_err:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An error occurred: {req_err}")
+    
+@router.get("/tefas/ParaCikisi", tags=["Tefas"])
+async def bind_comparison_fund_sizes(
+    bastarih: str = Query(None, description="Start date in format DD.MM.YYYY"),
+    bittarih: str = Query(None, description="End date in format DD.MM.YYYY")
+):
+    # Default dates: past month
+    if not bastarih:
+        bastarih = (datetime.now() - timedelta(days=30)).strftime('%d.%m.%Y')
+    if not bittarih:
+        bittarih = datetime.now().strftime('%d.%m.%Y')
+        
+    payload = ComparisonFundReturnsRequest(
+        bastarih=bastarih,
+        bittarih=bittarih
+    )
+
+    url = 'https://www.tefas.gov.tr/api/DB/BindComparisonFundSizes'
+
+    try:
+        response = requests.post(url, data=payload.dict())
+        response.raise_for_status()
+        data = response.json()
+
+        # 计算并添加新字段
+        total_delta = 0
+        for item in data['data']:
+            item['PORTFOYDEGERIDELTA'] = round(item['SONPORTFOYDEGERI'] - item['ILKPORTFOYDEGERI'],2)
+            total_delta += item['PORTFOYDEGERIDELTA']
+
+        # 将总和添加到原始数据中
+        data['TOTALPORTFOYDEGERIDELTA'] = round(total_delta,2)
+
+        # 处理 GETIRIORANI 为 None 的情况，将 None 替换为一个最小的值（如负无穷）
+        for item in data['data']:
+            if item['PORTFOYDEGERIDELTA'] is None:
+                item['PORTFOYDEGERIDELTA'] = -1e10
+
+        # 按照 GETIRIORANI 从大到小排序
+        sorted_data = sorted(data['data'], key=lambda x: x['PORTFOYDEGERIDELTA'])
+
+        # 更新原数据
+        data['data'] = sorted_data
+
+        # 获取前20条数据，中的data['FONTURACIKLAMA']
+        data_frist_20 = data['data'][:30]
+
+        # print(data_frist_20)
+
+        # Get all FONTURACIKLAMA values
+        fonturaciklama_list = [item['FONTURACIKLAMA'] for item in data_frist_20]
+
+        # Count the occurrences of each value
+        fonturaciklama_counts = Counter(fonturaciklama_list)
+
+        # Get the most common value
+        most_common_fonturaciklama = fonturaciklama_counts.most_common(1)[0]
+
+        print(f"En Fazla Para Cikisi olan: {most_common_fonturaciklama[0]}, Count: {most_common_fonturaciklama[1]}")
+
+
+
+        return data_frist_20
+    except requests.exceptions.HTTPError as http_err:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"HTTP error occurred: {http_err}")
+    except requests.exceptions.ConnectionError as conn_err:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Connection error occurred: {conn_err}")
+    except requests.exceptions.Timeout as timeout_err:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Timeout error occurred: {timeout_err}")
+    except requests.exceptions.RequestException as req_err:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An error occurred: {req_err}")
+    
+
+# haftalik, son 150 hafta eger haftada x yatirsam ne kadar olur du?
+@router.get("/tefas/Haftada_KODa_500_yatirsam/{fonkod}", tags=["Tefas"])
+async def find_returns(
+    fonkod: str = Path(..., description="Fund code"),
+    hafta_sayisi: int = Query(None, description="Kac hafta olsun?"),
+):
+    print("Running find_returns")
+
+    today = datetime.today()
+    start_of_week = today - timedelta(days=today.weekday())
+    end_of_week = start_of_week + timedelta(days=6)
+
+    rate_list = []
+
+    for i in range(hafta_sayisi):
+        print(f"Getting data for week {i+1}")
+        # For each week, get Monday and Sunday
+        monday = start_of_week - timedelta(weeks=i)
+        sunday = end_of_week - timedelta(weeks=i)
+        
+        # Format the dates as DD.MM.YYYY
+        monday_formatted = monday.strftime('%d.%m.%Y')
+        sunday_formatted = sunday.strftime('%d.%m.%Y')
+        print(f"{monday_formatted} : {sunday_formatted}")
+
+        payload = ComparisonFundReturnsRequest(
+            bastarih=monday_formatted,
+            bittarih=sunday_formatted
+        )
+
+        url = 'https://www.tefas.gov.tr/api/DB/BindComparisonFundReturns'
+
+
+        try:
+            response = requests.post(url, data=payload.dict())
+            response.raise_for_status()
+            data = response.json()
+
+            for item in data["data"]:
+                if item["FONKODU"] == fonkod:
+                    rate_list.append(item["GETIRIORANI"])
+                    break
+
+
+        except requests.exceptions.HTTPError as http_err:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"HTTP error occurred: {http_err}")
+        except requests.exceptions.ConnectionError as conn_err:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Connection error occurred: {conn_err}")
+        except requests.exceptions.Timeout as timeout_err:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Timeout error occurred: {timeout_err}")
+        except requests.exceptions.RequestException as req_err:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An error occurred: {req_err}")
+
+    # 倒序列表
+    rate_list.reverse()
+    return rate_list
+
+
+
+# aylik, son 36 ay eger ayda x yatirsam ne kadar olur du?
+@router.get("/tefas/Ayda_KODa_500_yatirsam/{fonkod}", tags=["Tefas"])
+async def find_returns(
+    fonkod: str = Path(..., description="Fund code"),
+    ay_sayisi: int = Query(None, description="Kac ay olsun?"),
+):
+    print("Running find_returns")
+
+    today = datetime.today()
+
+    rate_list = []
+
+    for i in range(ay_sayisi):
+        print(f"Getting data for month {i+1}")
+        month_offset = today.month - (i + 1)
+        year = today.year + (month_offset // 12)
+        month = month_offset % 12
+        if month <= 0:
+            month += 12
+            year -= 1
+
+        # 计算该月的第一天和最后一天
+        first_day = datetime(year, month, 1)
+        last_day = datetime(year, month, calendar.monthrange(year, month)[1])
+        
+        # 格式化日期
+        first_day_str = first_day.strftime('%d.%m.%Y')
+        last_day_str = last_day.strftime('%d.%m.%Y')
+
+        payload = ComparisonFundReturnsRequest(
+            bastarih= first_day_str,
+            bittarih= last_day_str
+        )
+
+        url = 'https://www.tefas.gov.tr/api/DB/BindComparisonFundReturns'
+
+        try:
+            response = requests.post(url, data=payload.dict())
+            response.raise_for_status()
+            data = response.json()
+
+            for item in data["data"]:
+                if item["FONKODU"] == fonkod:
+                    rate_list.append(item["GETIRIORANI"])
+                    break
+
+        except requests.exceptions.HTTPError as http_err:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"HTTP error occurred: {http_err}")
+        except requests.exceptions.ConnectionError as conn_err:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Connection error occurred: {conn_err}")
+        except requests.exceptions.Timeout as timeout_err:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Timeout error occurred: {timeout_err}")
+        except requests.exceptions.RequestException as req_err:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An error occurred: {req_err}")
+
+        
+
+    # 倒序列表
+    rate_list.reverse()
+    return rate_list
 
 app.include_router(router)
