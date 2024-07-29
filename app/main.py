@@ -644,6 +644,10 @@ async def fon_adet_degisimi(
     
     # 倒序列表
     TEDPAYSAYISI_LIST.reverse()
-    return TEDPAYSAYISI_LIST
+    KISISAYISI_LIST.reverse()
+    PORTFOYBUYUKLUK_LIST.reverse()
+    FIYAT_LIST.reverse()
+    
+    return FIYAT_LIST, TEDPAYSAYISI_LIST, KISISAYISI_LIST, PORTFOYBUYUKLUK_LIST
 
 app.include_router(router)
