@@ -579,4 +579,71 @@ async def find_returns(
     rate_list.reverse()
     return rate_list
 
+# fon adet degisimi
+@router.get("/tefas/FonAdetDegisimi/{fonkod}", tags=["Tefas"])
+async def fon_adet_degisimi(
+    fonkod: str = Path(..., description="Fund code"),
+    gun : int = Query(None, description="Day"),
+):
+    print("Running fon_adet_degisimi")
+    start_date = datetime.now()
+    end_date = start_date - timedelta(days=gun)
+
+    url = 'https://www.tefas.gov.tr/api/DB/BindHistoryInfo'
+
+    FIYAT_LIST = []
+    TEDPAYSAYISI_LIST = []
+    KISISAYISI_LIST = []
+    PORTFOYBUYUKLUK_LIST = []
+
+    current_date = start_date
+    while current_date > end_date:
+        # 输出日期格式为 DD.MM.YYYY
+        # print(current_date.strftime("%d.%m.%Y"))
+        tarih = current_date.strftime("%d.%m.%Y")
+
+        payload = BindHistoryInfo(
+            fonkod=fonkod,
+            bastarih=tarih,
+            bittarih=tarih
+        )
+
+        try:
+            response = requests.post(url, data=payload.dict())
+            response.raise_for_status()
+            data = response.json()
+
+            # print(f"data: {data}")
+            if data["recordsTotal"] == 0:
+                pass
+
+            else:
+                FIYAT_LIST.append(data["data"][0]["FIYAT"])
+                TEDPAYSAYISI_LIST.append(data["data"][0]["TEDPAYSAYISI"])
+                KISISAYISI_LIST.append(data["data"][0]["KISISAYISI"])
+                PORTFOYBUYUKLUK_LIST.append(data["data"][0]["PORTFOYBUYUKLUK"])
+                
+
+
+        except requests.exceptions.HTTPError as http_err:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"HTTP error occurred: {http_err}")
+        except requests.exceptions.ConnectionError as conn_err:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Connection error occurred: {conn_err}")
+        except requests.exceptions.Timeout as timeout_err:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Timeout error occurred: {timeout_err}")
+        except requests.exceptions.RequestException as req_err:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An error occurred: {req_err}")
+
+
+
+
+
+
+        current_date -= timedelta(days=1)
+
+    
+    # 倒序列表
+    TEDPAYSAYISI_LIST.reverse()
+    return TEDPAYSAYISI_LIST
+
 app.include_router(router)
