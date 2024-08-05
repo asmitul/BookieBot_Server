@@ -687,7 +687,7 @@ async def find_returns(
     else:
         print("总投入为 0，无法计算利润率")
 
-    return total_investment, final_profit, profit_rate, profit_rate/len(period_profits)
+    return total_investment, final_profit, profit_rate/100, profit_rate/len(period_profits)/100
 
 # fon adet degisimi
 @router.get("/tefas/FonAdetDegisimi/{fonkod}", tags=["Tefas"])
