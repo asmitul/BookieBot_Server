@@ -991,7 +991,10 @@ async def find_returns(
         list_d.append(total_investment)
         list_d.append(investment_value)
         list_d.append(profit_rate)
-        list_d.append(profit_rate/len(period_profits))
+        try:
+            list_d.append(profit_rate/len(period_profits))
+        except ZeroDivisionError:
+            list_d.append(0)
 
         data_C[fonkod] = list_d
 
