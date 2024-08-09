@@ -6,6 +6,6 @@
         "user": "admin",
         "host": "170.187.230.222",
         "port": "27017",
-        "name": "Prod"
+        "name": "Prod_v2"
     }
 }
