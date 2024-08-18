@@ -175,6 +175,12 @@ async def bind_comparison_fund_returns(
         response.raise_for_status()
         data = response.json()
 
+        # 使用列表解析来过滤掉含有“Serbest”的项
+        data['data'] = [item for item in data['data'] if 'Serbest' not in item['FONTURACIKLAMA']]
+        # 更新 recordsTotal 和 recordsFiltered
+        data['recordsTotal'] = len(data['data'])
+        data['recordsFiltered'] = len(data['data'])
+
         # 处理 GETIRIORANI 为 None 的情况，将 None 替换为一个最小的值（如负无穷）
         for item in data['data']:
             if item['GETIRIORANI'] is None:
@@ -264,6 +270,12 @@ async def bind_comparison_fund_sizes(
         response.raise_for_status()
         data = response.json()
 
+        # 使用列表解析来过滤掉含有“Serbest”的项
+        data['data'] = [item for item in data['data'] if 'Serbest' not in item['FONTURACIKLAMA']]
+        # 更新 recordsTotal 和 recordsFiltered
+        data['recordsTotal'] = len(data['data'])
+        data['recordsFiltered'] = len(data['data'])
+
         # 处理 GETIRIORANI 为 None 的情况，将 None 替换为一个最小的值（如负无穷）
         for item in data['data']:
             if item['SONPORTFOYDEGERI'] is None:
@@ -305,6 +317,13 @@ async def bind_comparison_management_fees(
         response = requests.post(url, data=payload)
         response.raise_for_status()
         data = response.json()
+
+        # 使用列表解析来过滤掉含有“Serbest”的项
+        data['data'] = [item for item in data['data'] if 'Serbest' not in item['FONTURACIKLAMA']]
+        # 更新 recordsTotal 和 recordsFiltered
+        data['recordsTotal'] = len(data['data'])
+        data['recordsFiltered'] = len(data['data'])
+
         return data
     except requests.exceptions.HTTPError as http_err:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"HTTP error occurred: {http_err}")
@@ -338,6 +357,12 @@ async def bind_comparison_fund_sizes(
         response = requests.post(url, data=payload.dict())
         response.raise_for_status()
         data = response.json()
+
+        # 使用列表解析来过滤掉含有“Serbest”的项
+        data['data'] = [item for item in data['data'] if 'Serbest' not in item['FONTURACIKLAMA']]
+        # 更新 recordsTotal 和 recordsFiltered
+        data['recordsTotal'] = len(data['data'])
+        data['recordsFiltered'] = len(data['data'])
 
         # 计算并添加新字段
         total_delta = 0
@@ -409,6 +434,12 @@ async def bind_comparison_fund_sizes(
         response = requests.post(url, data=payload.dict())
         response.raise_for_status()
         data = response.json()
+
+        # 使用列表解析来过滤掉含有“Serbest”的项
+        data['data'] = [item for item in data['data'] if 'Serbest' not in item['FONTURACIKLAMA']]
+        # 更新 recordsTotal 和 recordsFiltered
+        data['recordsTotal'] = len(data['data'])
+        data['recordsFiltered'] = len(data['data'])
 
         # 计算并添加新字段
         total_delta = 0
@@ -497,6 +528,12 @@ async def find_returns(
             response.raise_for_status()
             data = response.json()
 
+            # 使用列表解析来过滤掉含有“Serbest”的项
+            data['data'] = [item for item in data['data'] if 'Serbest' not in item['FONTURACIKLAMA']]
+            # 更新 recordsTotal 和 recordsFiltered
+            data['recordsTotal'] = len(data['data'])
+            data['recordsFiltered'] = len(data['data'])
+
             for item in data["data"]:
                 if item["FONKODU"] == fonkod:
                     rate_list.append(item["GETIRIORANI"])
@@ -559,6 +596,12 @@ async def find_returns(
             response.raise_for_status()
             data = response.json()
 
+            # 使用列表解析来过滤掉含有“Serbest”的项
+            data['data'] = [item for item in data['data'] if 'Serbest' not in item['FONTURACIKLAMA']]
+            # 更新 recordsTotal 和 recordsFiltered
+            data['recordsTotal'] = len(data['data'])
+            data['recordsFiltered'] = len(data['data'])
+
             for item in data["data"]:
                 if item["FONKODU"] == fonkod:
                     rate_list.append(item["GETIRIORANI"])
@@ -579,269 +622,6 @@ async def find_returns(
     rate_list.reverse()
     return rate_list
 
-# @router.get("/tefas/Ayda_KODa_500_yatirsam_tmp/{fonkod}", tags=["Tefas"])
-# async def find_returns(
-#     fonkod: str = Path(..., description="Fund code"),
-#     ay_sayisi: int = Query(None, description="Kac ay olsun?"),
-# ):
-#     print("Running find_returns")
-
-#     today = datetime.today()
-
-#     rate_list = []
-
-#     for i in range(ay_sayisi):
-#         print(f"Getting data for month {i+1}")
-#         month_offset = today.month - (i + 1)
-#         year = today.year + (month_offset // 12)
-#         month = month_offset % 12
-#         if month <= 0:
-#             month += 12
-#             year -= 1
-
-#         # 计算该月的第一天和最后一天
-#         first_day = datetime(year, month, 1)
-#         last_day = datetime(year, month, calendar.monthrange(year, month)[1])
-        
-#         # 格式化日期
-#         first_day_str = first_day.strftime('%d.%m.%Y')
-#         last_day_str = last_day.strftime('%d.%m.%Y')
-
-#         payload = ComparisonFundReturnsRequest(
-#             bastarih= first_day_str,
-#             bittarih= last_day_str
-#         )
-
-#         url = 'https://www.tefas.gov.tr/api/DB/BindComparisonFundReturns'
-
-#         try:
-#             response = requests.post(url, data=payload.dict())
-#             response.raise_for_status()
-#             data = response.json()
-
-#             # 在 data["data"] 中的 FONKODU 如果没有响应的fonkod ， 那么跳出上面的for语句
-#             found = False
-
-#             for item in data["data"]:
-#                 if item["FONKODU"] == fonkod:
-#                     rate_list.append(item["GETIRIORANI"])
-#                     found = True
-#                     break
-            
-#             if not found:
-#                 break
-
-#         except requests.exceptions.HTTPError as http_err:
-#             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"HTTP error occurred: {http_err}")
-#         except requests.exceptions.ConnectionError as conn_err:
-#             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Connection error occurred: {conn_err}")
-#         except requests.exceptions.Timeout as timeout_err:
-#             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Timeout error occurred: {timeout_err}")
-#         except requests.exceptions.RequestException as req_err:
-#             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An error occurred: {req_err}")
-
-        
-
-#     # 倒序列表
-#     rate_list.reverse()
-
-#     print(rate_list)
-
-#     # delete None in list
-#     rate_list = list(filter(None, rate_list))
-
-#     print(rate_list)
-
-
-#     period_profits = rate_list
-#     # 每周投资金额
-#     investment_per_peroid = 100
-
-#     # 初始投资账户价值
-#     investment_value = 0
-
-#     # 总投资金额
-#     total_investment = 0
-
-#     # 遍历每周的利润率并更新投资账户价值
-#     for profit in period_profits:
-#         # 将当前投资金额加入账户
-#         investment_value += investment_per_peroid
-#         # 更新总投资金额
-#         total_investment += investment_per_peroid
-#         # 根据当前周的利润率更新账户价值
-#         investment_value += investment_value * (profit / 100)
-#         print(f"当前账户价值: {total_investment} - {investment_value:.2f} 元")
-
-#     # 计算最终利润
-#     final_profit = investment_value - total_investment
-
-#     print(f"总共投入: {total_investment:.2f} 元")
-#     print(f"最终利润: {final_profit:.2f} 元")
-
-#     # 避免除以零的错误
-#     if total_investment != 0:
-#         profit_rate = (final_profit / total_investment) * 100
-#         print(f"利润率: {profit_rate:.2f}%")
-#         print(f"period%: {profit_rate/len(period_profits):.2f}%")
-#     else:
-#         print("总投入为 0，无法计算利润率")
-
-#     return total_investment, final_profit, profit_rate/100, profit_rate/len(period_profits)/100
-
-
-# @router.get("/tefas/tum_hisse_senedi_fonlari_getirisi", tags=["Tefas"])
-# async def find_returns(
-#     ay_sayisi: int = Query(None, description="Kac ay olsun?"),
-# ):
-#     print("Running find_returns")
-
-#     today = datetime.today()
-
-#     # fon list
-#     fon_list = []
-        
-#     payload = ComparisonFundReturnsRequest(
-#         bastarih=(datetime.now() - timedelta(days=30)).strftime('%d.%m.%Y'),
-#         bittarih=datetime.now().strftime('%d.%m.%Y')
-#     )
-
-#     url = 'https://www.tefas.gov.tr/api/DB/BindComparisonFundReturns'
-
-    
-#     response = requests.post(url, data=payload.dict())
-#     response.raise_for_status()
-#     data = response.json()
-
-#     # 处理 GETIRIORANI 为 None 的情况，将 None 替换为一个最小的值（如负无穷）
-#     for item in data['data']:
-#         if item['GETIRIORANI'] is None:
-#             item['GETIRIORANI'] = -1e10
-
-#     # 按照 GETIRIORANI 从大到小排序
-#     sorted_data = sorted(data['data'], key=lambda x: x['GETIRIORANI'], reverse=True)
-
-#     # 更新原数据
-#     data['data'] = sorted_data
-
-#     for item in data['data']:
-#         fon_list.append(item['FONKODU'])
-
-#     ##################################################
-
-#     data_total = []
-
-#     for fonkod in fon_list:
-#         print(f"Getting data for fund {fonkod}")
-
-#         rate_list = []
-#         data__ = {}
-#         for i in range(ay_sayisi):
-#             print(f"Getting data for month {i+1}")
-#             month_offset = today.month - (i + 1)
-#             year = today.year + (month_offset // 12)
-#             month = month_offset % 12
-#             if month <= 0:
-#                 month += 12
-#                 year -= 1
-
-#             # 计算该月的第一天和最后一天
-#             first_day = datetime(year, month, 1)
-#             last_day = datetime(year, month, calendar.monthrange(year, month)[1])
-            
-#             # 格式化日期
-#             first_day_str = first_day.strftime('%d.%m.%Y')
-#             last_day_str = last_day.strftime('%d.%m.%Y')
-
-#             payload = ComparisonFundReturnsRequest(
-#                 bastarih= first_day_str,
-#                 bittarih= last_day_str
-#             )
-
-#             url = 'https://www.tefas.gov.tr/api/DB/BindComparisonFundReturns'
-
-#             try:
-#                 response = requests.post(url, data=payload.dict())
-#                 response.raise_for_status()
-#                 data = response.json()
-
-#                 # 在 data["data"] 中的 FONKODU 如果没有响应的fonkod ， 那么跳出上面的for语句
-#                 found = False
-
-#                 for item in data["data"]:
-#                     if item["FONKODU"] == fonkod:
-#                         rate_list.append(item["GETIRIORANI"])
-#                         found = True
-#                         break
-                
-#                 if not found:
-#                     break
-
-#             except requests.exceptions.HTTPError as http_err:
-#                 raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"HTTP error occurred: {http_err}")
-#             except requests.exceptions.ConnectionError as conn_err:
-#                 raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Connection error occurred: {conn_err}")
-#             except requests.exceptions.Timeout as timeout_err:
-#                 raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Timeout error occurred: {timeout_err}")
-#             except requests.exceptions.RequestException as req_err:
-#                 raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An error occurred: {req_err}")
-
-            
-
-#         # 倒序列表
-#         rate_list.reverse()
-
-#         print(rate_list)
-
-#         # delete None in list
-#         rate_list = list(filter(None, rate_list))
-
-#         print(rate_list)
-
-
-#         period_profits = rate_list
-#         # 每周投资金额
-#         investment_per_peroid = 100
-
-#         # 初始投资账户价值
-#         investment_value = 0
-
-#         # 总投资金额
-#         total_investment = 0
-
-#         # 遍历每周的利润率并更新投资账户价值
-#         for profit in period_profits:
-#             # 将当前投资金额加入账户
-#             investment_value += investment_per_peroid
-#             # 更新总投资金额
-#             total_investment += investment_per_peroid
-#             # 根据当前周的利润率更新账户价值
-#             investment_value += investment_value * (profit / 100)
-#             print(f"当前账户价值: {total_investment} - {investment_value:.2f} 元")
-
-#         # 计算最终利润
-#         final_profit = investment_value - total_investment
-
-#         print(f"总共投入: {total_investment:.2f} 元")
-#         print(f"最终利润: {final_profit:.2f} 元")
-
-#         # 避免除以零的错误
-#         if total_investment != 0:
-#             profit_rate = (final_profit / total_investment) * 100
-#             print(f"利润率: {profit_rate:.2f}%")
-#             print(f"period%: {profit_rate/len(period_profits):.2f}%")
-#         else:
-#             print("总投入为 0，无法计算利润率")
-
-#         data__['fonkod'] = fonkod
-#         data__['total_investment'] = total_investment
-#         data__['final_profit'] = final_profit
-#         data__['profit_rate'] = profit_rate
-#         data__['period_profits'] = period_profits
-
-#         data_total.append(data__)
-
-#     return data_total
 
 
 @router.get("/tefas/tum_hisse_senedi_fonlari_getirisi_v2", tags=["Tefas"])
@@ -866,6 +646,12 @@ async def find_returns(
     response = requests.post(url, data=payload.dict())
     response.raise_for_status()
     data = response.json()
+
+    # 使用列表解析来过滤掉含有“Serbest”的项
+    data['data'] = [item for item in data['data'] if 'Serbest' not in item['FONTURACIKLAMA']]
+    # 更新 recordsTotal 和 recordsFiltered
+    data['recordsTotal'] = len(data['data'])
+    data['recordsFiltered'] = len(data['data'])
 
     # 处理 GETIRIORANI 为 None 的情况，将 None 替换为一个最小的值（如负无穷）
     for item in data['data']:
