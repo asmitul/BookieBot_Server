@@ -181,6 +181,30 @@ async def bind_comparison_fund_returns(
         data['recordsTotal'] = len(data['data'])
         data['recordsFiltered'] = len(data['data'])
 
+        # 使用列表解析来过滤掉含有“Serbest”的项
+        data['data'] = [item for item in data['data'] if 'Para' not in item['FONTURACIKLAMA']]
+        # 更新 recordsTotal 和 recordsFiltered
+        data['recordsTotal'] = len(data['data'])
+        data['recordsFiltered'] = len(data['data'])
+
+        # 使用列表解析来过滤掉含有“Serbest”的项
+        data['data'] = [item for item in data['data'] if 'Katılım' not in item['FONTURACIKLAMA']]
+        # 更新 recordsTotal 和 recordsFiltered
+        data['recordsTotal'] = len(data['data'])
+        data['recordsFiltered'] = len(data['data'])
+
+        # 使用列表解析来过滤掉含有“Serbest”的项
+        data['data'] = [item for item in data['data'] if 'Borçlanma' not in item['FONTURACIKLAMA']]
+        # 更新 recordsTotal 和 recordsFiltered
+        data['recordsTotal'] = len(data['data'])
+        data['recordsFiltered'] = len(data['data'])
+
+        # 使用列表解析来过滤掉含有“Serbest”的项
+        data['data'] = [item for item in data['data'] if 'Kira' not in item['FONTURACIKLAMA']]
+        # 更新 recordsTotal 和 recordsFiltered
+        data['recordsTotal'] = len(data['data'])
+        data['recordsFiltered'] = len(data['data'])
+
         # 处理 GETIRIORANI 为 None 的情况，将 None 替换为一个最小的值（如负无穷）
         for item in data['data']:
             if item['GETIRIORANI'] is None:
@@ -276,6 +300,30 @@ async def bind_comparison_fund_sizes(
         data['recordsTotal'] = len(data['data'])
         data['recordsFiltered'] = len(data['data'])
 
+        # 使用列表解析来过滤掉含有“Serbest”的项
+        data['data'] = [item for item in data['data'] if 'Para' not in item['FONTURACIKLAMA']]
+        # 更新 recordsTotal 和 recordsFiltered
+        data['recordsTotal'] = len(data['data'])
+        data['recordsFiltered'] = len(data['data'])
+
+        # 使用列表解析来过滤掉含有“Serbest”的项
+        data['data'] = [item for item in data['data'] if 'Katılım' not in item['FONTURACIKLAMA']]
+        # 更新 recordsTotal 和 recordsFiltered
+        data['recordsTotal'] = len(data['data'])
+        data['recordsFiltered'] = len(data['data'])
+
+        # 使用列表解析来过滤掉含有“Serbest”的项
+        data['data'] = [item for item in data['data'] if 'Borçlanma' not in item['FONTURACIKLAMA']]
+        # 更新 recordsTotal 和 recordsFiltered
+        data['recordsTotal'] = len(data['data'])
+        data['recordsFiltered'] = len(data['data'])
+
+        # 使用列表解析来过滤掉含有“Serbest”的项
+        data['data'] = [item for item in data['data'] if 'Kira' not in item['FONTURACIKLAMA']]
+        # 更新 recordsTotal 和 recordsFiltered
+        data['recordsTotal'] = len(data['data'])
+        data['recordsFiltered'] = len(data['data'])
+
         # 处理 GETIRIORANI 为 None 的情况，将 None 替换为一个最小的值（如负无穷）
         for item in data['data']:
             if item['SONPORTFOYDEGERI'] is None:
@@ -320,6 +368,30 @@ async def bind_comparison_management_fees(
 
         # 使用列表解析来过滤掉含有“Serbest”的项
         data['data'] = [item for item in data['data'] if 'Serbest' not in item['FONTURACIKLAMA']]
+        # 更新 recordsTotal 和 recordsFiltered
+        data['recordsTotal'] = len(data['data'])
+        data['recordsFiltered'] = len(data['data'])
+
+        # 使用列表解析来过滤掉含有“Serbest”的项
+        data['data'] = [item for item in data['data'] if 'Para' not in item['FONTURACIKLAMA']]
+        # 更新 recordsTotal 和 recordsFiltered
+        data['recordsTotal'] = len(data['data'])
+        data['recordsFiltered'] = len(data['data'])
+
+        # 使用列表解析来过滤掉含有“Serbest”的项
+        data['data'] = [item for item in data['data'] if 'Katılım' not in item['FONTURACIKLAMA']]
+        # 更新 recordsTotal 和 recordsFiltered
+        data['recordsTotal'] = len(data['data'])
+        data['recordsFiltered'] = len(data['data'])
+
+        # 使用列表解析来过滤掉含有“Serbest”的项
+        data['data'] = [item for item in data['data'] if 'Borçlanma' not in item['FONTURACIKLAMA']]
+        # 更新 recordsTotal 和 recordsFiltered
+        data['recordsTotal'] = len(data['data'])
+        data['recordsFiltered'] = len(data['data'])
+
+        # 使用列表解析来过滤掉含有“Serbest”的项
+        data['data'] = [item for item in data['data'] if 'Kira' not in item['FONTURACIKLAMA']]
         # 更新 recordsTotal 和 recordsFiltered
         data['recordsTotal'] = len(data['data'])
         data['recordsFiltered'] = len(data['data'])
