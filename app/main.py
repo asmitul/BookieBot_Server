@@ -579,6 +579,97 @@ async def bind_comparison_fund_sizes(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An error occurred: {req_err}")
     
 
+@router.get("/tefas/ParaCikisi_V2", tags=["Tefas"])
+async def bind_comparison_fund_sizes(
+    bastarih: str = Query(None, description="Start date in format DD.MM.YYYY"),
+    bittarih: str = Query(None, description="End date in format DD.MM.YYYY")
+):
+    # Default dates: past month
+    if not bastarih:
+        bastarih = (datetime.now() - timedelta(days=30)).strftime('%d.%m.%Y')
+    if not bittarih:
+        bittarih = datetime.now().strftime('%d.%m.%Y')
+        
+    payload = ComparisonFundReturnsRequest(
+        bastarih=bastarih,
+        bittarih=bittarih
+    )
+
+    url = 'https://www.tefas.gov.tr/api/DB/BindComparisonFundSizes'
+
+    try:
+        response = requests.post(url, data=payload.dict())
+        response.raise_for_status()
+        data = response.json()
+
+        # 使用列表解析来过滤掉含有“Serbest”的项
+        data['data'] = [item for item in data['data'] if 'Serbest' not in item['FONTURACIKLAMA']]
+        # 更新 recordsTotal 和 recordsFiltered
+        data['recordsTotal'] = len(data['data'])
+        data['recordsFiltered'] = len(data['data'])
+
+        # 使用列表解析来过滤掉含有“Serbest”的项
+        data['data'] = [item for item in data['data'] if 'Para' not in item['FONTURACIKLAMA']]
+        # 更新 recordsTotal 和 recordsFiltered
+        data['recordsTotal'] = len(data['data'])
+        data['recordsFiltered'] = len(data['data'])
+
+        # 使用列表解析来过滤掉含有“Serbest”的项
+        data['data'] = [item for item in data['data'] if 'Katılım' not in item['FONTURACIKLAMA']]
+        # 更新 recordsTotal 和 recordsFiltered
+        data['recordsTotal'] = len(data['data'])
+        data['recordsFiltered'] = len(data['data'])
+
+        # 计算并添加新字段
+        total_delta = 0
+        for item in data['data']:
+            item['PORTFOYDEGERIDELTA'] = round(item['SONPORTFOYDEGERI'] - item['ILKPORTFOYDEGERI'],2)
+            total_delta += item['PORTFOYDEGERIDELTA']
+
+        # 将总和添加到原始数据中
+        data['TOTALPORTFOYDEGERIDELTA'] = round(total_delta,2)
+
+        # 处理 GETIRIORANI 为 None 的情况，将 None 替换为一个最小的值（如负无穷）
+        for item in data['data']:
+            if item['PORTFOYDEGERIDELTA'] is None:
+                item['PORTFOYDEGERIDELTA'] = -1e10
+
+        # 按照 GETIRIORANI 从大到小排序
+        sorted_data = sorted(data['data'], key=lambda x: x['PORTFOYDEGERIDELTA'])
+
+        # 更新原数据
+        data['data'] = sorted_data
+
+        # 获取前20条数据，中的data['FONTURACIKLAMA']
+        data_frist_20 = data['data'][:30]
+
+        # print(data_frist_20)
+
+        # Get all FONTURACIKLAMA values
+        fonturaciklama_list = [item['FONTURACIKLAMA'] for item in data_frist_20]
+
+        # Count the occurrences of each value
+        fonturaciklama_counts = Counter(fonturaciklama_list)
+
+        # Get the most common value
+        most_common_fonturaciklama = fonturaciklama_counts.most_common(1)[0]
+
+        print(f"En Fazla Para Cikisi olan: {most_common_fonturaciklama[0]}, Count: {most_common_fonturaciklama[1]}")
+
+
+
+        return data_frist_20
+    except requests.exceptions.HTTPError as http_err:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"HTTP error occurred: {http_err}")
+    except requests.exceptions.ConnectionError as conn_err:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Connection error occurred: {conn_err}")
+    except requests.exceptions.Timeout as timeout_err:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Timeout error occurred: {timeout_err}")
+    except requests.exceptions.RequestException as req_err:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An error occurred: {req_err}")
+    
+
+
 # haftalik, son 150 hafta eger haftada x yatirsam ne kadar olur du?
 @router.get("/tefas/Haftada_KODa_500_yatirsam/{fonkod}", tags=["Tefas"])
 async def find_returns(
