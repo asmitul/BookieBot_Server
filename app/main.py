@@ -589,11 +589,8 @@ async def bind_comparison_fund_sizes(
 @router.get("/tefas/ParaGirisi_V2_hafta", tags=["Tefas"])
 async def bind_comparison_fund_sizes(
 ):
-    # Default dates: past month
-    if not bastarih:
-        bastarih = (datetime.now() - timedelta(days=7)).strftime('%d.%m.%Y')
-    if not bittarih:
-        bittarih = datetime.now().strftime('%d.%m.%Y')
+    bastarih = (datetime.now() - timedelta(days=7)).strftime('%d.%m.%Y')
+    bittarih = datetime.now().strftime('%d.%m.%Y')
         
     payload = ComparisonFundReturnsRequest(
         bastarih=bastarih,
@@ -870,11 +867,8 @@ async def bind_comparison_fund_sizes(
 @router.get("/tefas/ParaCikisi_V2_hafta", tags=["Tefas"])
 async def bind_comparison_fund_sizes(
 ):
-    # Default dates: past month
-    if not bastarih:
-        bastarih = (datetime.now() - timedelta(days=7)).strftime('%d.%m.%Y')
-    if not bittarih:
-        bittarih = datetime.now().strftime('%d.%m.%Y')
+    bastarih = (datetime.now() - timedelta(days=7)).strftime('%d.%m.%Y')
+    bittarih = datetime.now().strftime('%d.%m.%Y')
         
     payload = ComparisonFundReturnsRequest(
         bastarih=bastarih,
