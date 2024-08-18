@@ -459,6 +459,12 @@ async def bind_comparison_fund_sizes(
         data['recordsTotal'] = len(data['data'])
         data['recordsFiltered'] = len(data['data'])
 
+        # 使用列表解析来过滤掉含有“Serbest”的项
+        data['data'] = [item for item in data['data'] if 'Kira' not in item['FONTURACIKLAMA']]
+        # 更新 recordsTotal 和 recordsFiltered
+        data['recordsTotal'] = len(data['data'])
+        data['recordsFiltered'] = len(data['data'])
+
         # 计算并添加新字段
         total_delta = 0
         for item in data['data']:
@@ -628,6 +634,12 @@ async def bind_comparison_fund_sizes(
 
         # 使用列表解析来过滤掉含有“Serbest”的项
         data['data'] = [item for item in data['data'] if 'Borçlanma' not in item['FONTURACIKLAMA']]
+        # 更新 recordsTotal 和 recordsFiltered
+        data['recordsTotal'] = len(data['data'])
+        data['recordsFiltered'] = len(data['data'])
+
+        # 使用列表解析来过滤掉含有“Serbest”的项
+        data['data'] = [item for item in data['data'] if 'Kira' not in item['FONTURACIKLAMA']]
         # 更新 recordsTotal 和 recordsFiltered
         data['recordsTotal'] = len(data['data'])
         data['recordsFiltered'] = len(data['data'])
