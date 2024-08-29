@@ -1469,6 +1469,59 @@ async def fon_adet_degisimi(
     
     return FIYAT_LIST, TEDPAYSAYISI_LIST, KISISAYISI_LIST, PORTFOYBUYUKLUK_LIST
 
-# return fons history price as long as possible and save to database, get USDTRY price
+# get current USDTRY price use binance api
 
+# Binance API endpoint for ticker price
+BINANCE_API_URL = "https://api.binance.com/api/v3/ticker/price"
+
+@router.get("/usdttry/current", tags=["Binance"])
+def get_usd_try_price():
+    try:
+        response = requests.get(BINANCE_API_URL, params={"symbol": "USDTTRY"})
+        response.raise_for_status()  # Raise an HTTPError for bad responses
+        data = response.json()
+        return data
+        # return {"symbol": data["symbol"], "price": data["price"]}
+    except requests.RequestException as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+# Binance API endpoint for historical candlestick data
+HISTORICAL_API_URL = "https://api.binance.com/api/v3/klines"
+
+@router.get("/usdttry/historical", tags=["Binance"])
+def get_historical_price(date: str):
+    # Validate and parse the date
+    try:
+        dt = datetime.strptime(date, "%d.%m.%Y")
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format. Use DD.MM.YYYY")
+    
+    # Set up the start and end times for the requested date
+    start_time = int(dt.timestamp() * 1000)  # Convert to milliseconds
+    end_time = int((dt + timedelta(days=1)).timestamp() * 1000)  # End of the day
+
+    try:
+        response = requests.get(HISTORICAL_API_URL, params={
+            "symbol": "USDTTRY",
+            "interval": "1d",
+            "startTime": start_time,
+            "endTime": end_time
+        })
+        response.raise_for_status()
+        data = response.json()
+        if not data:
+            raise HTTPException(status_code=404, detail="No data found for the specified date.")
+        # Extract relevant parts from the candlestick data
+        price_data = {
+            "open_time": data[0][0],
+            "open": data[0][1],
+            "high": data[0][2],
+            "low": data[0][3],
+            "close": data[0][4],
+            "volume": data[0][5]
+        }
+        return price_data
+    except requests.RequestException as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    
 app.include_router(router)
