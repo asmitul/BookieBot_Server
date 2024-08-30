@@ -1574,7 +1574,7 @@ async def find_returns(
 
     # print(fon_list)
 
-    fon_list = ["YAS","MAC","IIH"]
+    # fon_list = ["YAS","MAC","IIH"]
 
     ##################################################
 
@@ -1670,7 +1670,7 @@ async def find_returns(
 
         data_B[fon] = list_b
 
-    print(f"data_B: {data_B}")
+    # print(f"data_B: {data_B}")
 
     data_C = {}
     for fonkod, list_c in data_B.items():
