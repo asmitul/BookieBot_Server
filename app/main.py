@@ -296,11 +296,15 @@ async def fonlarin_getirisi_dolar(
 
 
 @router.get("/tefas/fonlarin_getirisi_dolar_her_3ay", tags=["Tefas"])
-async def fonlarin_getirisi_dolar_her_3ay():
+async def fonlarin_getirisi_dolar_her_3ay(
+    ay_sayisi: int = Query(None, description="Kac ay olsun? (1-59)"),
+    duratioon: int = Query(None, description="Kac ay aralikli olsun?"),
+):
 
+    loop_num = int(ay_sayisi / duratioon)
     list_ = []
-    for i in range(5):
-        data = await fonlarin_getirisi_dolar(3 * (i + 1))
+    for i in range(loop_num):
+        data = await fonlarin_getirisi_dolar(duratioon * (i + 1))
 
         # 使用 keys() 方法将所有键保存到一个新的列表
         keys_list = list(data.keys())
