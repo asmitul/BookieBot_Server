@@ -86,6 +86,7 @@ def get_historical_price(date: str):
 @router.get("/tefas/fonlarin_getirisi_dolar", tags=["Tefas"])
 async def fonlarin_getirisi_dolar(
     ay_sayisi: int = Query(None, description="Kac ay olsun? (1-59)"),
+    paydisi: int = Query(None, description="paydisi % yukari ?"),
 ):
     print("Running find_returns")
 
@@ -285,7 +286,7 @@ async def fonlarin_getirisi_dolar(
     # return filtered_data
 
     # 使用字典推导式删除第三项小于零的键值对
-    filtered_data_2 = {key: value for key, value in filtered_data.items() if value[2] >= 0}
+    filtered_data_2 = {key: value for key, value in filtered_data.items() if value[2] >= paydisi}
 
     # # 使用 keys() 方法将所有键保存到一个新的列表
     # keys_list = list(filtered_data_2.keys())
@@ -299,12 +300,13 @@ async def fonlarin_getirisi_dolar(
 async def fonlarin_getirisi_dolar_her_3ay(
     ay_sayisi: int = Query(None, description="Kac ay olsun? (1-59)"),
     duratioon: int = Query(None, description="Kac ay aralikli olsun?"),
+    paydisi: int = Query(None, description="paydisi % yukari ?"),
 ):
 
     loop_num = int(ay_sayisi / duratioon)
     list_ = []
     for i in range(loop_num):
-        data = await fonlarin_getirisi_dolar(duratioon * (i + 1))
+        data = await fonlarin_getirisi_dolar(duratioon * (i + 1), paydisi)
 
         # 使用 keys() 方法将所有键保存到一个新的列表
         keys_list = list(data.keys())
